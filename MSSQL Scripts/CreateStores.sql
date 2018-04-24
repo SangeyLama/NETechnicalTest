@@ -1,4 +1,4 @@
-use NeasTest
+
 
 CREATE TABLE Stores (
 	id int IDENTITY(1,1) PRIMARY KEY,
