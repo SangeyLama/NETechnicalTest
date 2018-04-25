@@ -1,29 +1,29 @@
-﻿using System;
-using System.Configuration;
+﻿using Model;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Model;
-using System.Data.SqlClient;
 
 namespace DAL
 {
-    public class SalespersonDAL
+    public class DistrictDAL
     {
         private string ConnectionString { get; set; }
 
-        public SalespersonDAL()
+        public DistrictDAL()
         {
             ConnectionString = ConfigurationManager.ConnectionStrings["NeasDBConnection"].ToString();
         }
 
-        public int Insert(Salesperson salesperson)
+        public int Insert(District district)
         {
             int lastId = 0;
             string query =
-                "INSERT INTO Salespersons(name)" +
-                "Values (@name);" +
+                "INSERT INTO Districts(name,primary_salesperson_id)" +
+                "Values (@name, @salespersonId);" +
                 "SELECT CAST(scope_identity() as int)";
             try
             {
@@ -32,7 +32,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
+                        command.Parameters.AddWithValue("@name", district.Name);
+                        command.Parameters.AddWithValue("@salespersonID", district.PrimarySalesperson.Id);
                         Object newId = command.ExecuteScalar();
                         lastId = Convert.ToInt32(newId);
                     }
@@ -45,11 +46,11 @@ namespace DAL
             return lastId;
         }
 
-        public Salesperson GetById(int id)
+        public District GetById(int id)
         {
             string query =
-                "SELECT * FROM Salespersons WHERE id = @id";
-            Salesperson found = new Salesperson();
+                "SELECT * FROM Districts WHERE id = @id";
+            District found = new District();
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -61,7 +62,7 @@ namespace DAL
                         SqlDataReader reader = command.ExecuteReader();
                         if (reader.Read())
                         {
-                            found = BuildSalesperson(reader);
+                            found = BuildDistrict(reader);
                         }
                     }
                 }
@@ -73,11 +74,11 @@ namespace DAL
             return found;
         }
 
-        public IEnumerable<Salesperson> GetAll()
+        public IEnumerable<District> GetAll()
         {
             string query =
-                "SELECT * FROM Salespersons";
-            List<Salesperson> found = new List<Salesperson>();
+                "SELECT * FROM Districts";
+            List<District> found = new List<District>();
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -88,8 +89,8 @@ namespace DAL
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
                         {
-                            Salesperson salesperson = BuildSalesperson(reader);
-                            found.Add(salesperson);
+                            District district = BuildDistrict(reader);
+                            found.Add(district);
                         }
                     }
                 }
@@ -101,11 +102,11 @@ namespace DAL
             return found;
         }
 
-        public int Update(Salesperson salesperson)
+        public int Update(District district)
         {
             int rowsAffected = 0;
             string query =
-                "UPDATE Salespersons SET name = @name WHERE id = @id";
+                "UPDATE Districts SET name = @name, primary_salesperson_id = @primarySalespersonId WHERE id = @id";
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -113,8 +114,9 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
-                        command.Parameters.AddWithValue("@id", salesperson.Id);
+                        command.Parameters.AddWithValue("@name", district.Name);
+                        command.Parameters.AddWithValue("@primarySalespersonId", district.PrimarySalesperson.Id);
+                        command.Parameters.AddWithValue("@id", district.Id);
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -126,11 +128,11 @@ namespace DAL
             return rowsAffected;
         }
 
-        public int Delete(Salesperson salesperson)
+        public int Delete(District district)
         {
             int rowsAffected = 0;
             string query =
-                "DELETE FROM Salespersons WHERE id = @id AND name = @name";
+                "DELETE FROM Districts WHERE id = @id AND name = @name AND primary_salesperson_id = @primarySalespersonId";
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -138,8 +140,9 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
-                        command.Parameters.AddWithValue("@id", salesperson.Id);
+                        command.Parameters.AddWithValue("@id", district.Id);
+                        command.Parameters.AddWithValue("@name", district.Name);
+                        command.Parameters.AddWithValue("@primarySalespersonId", district.PrimarySalesperson.Id);
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -151,28 +154,34 @@ namespace DAL
             return rowsAffected;
         }
 
-        private Salesperson BuildSalesperson(SqlDataReader reader)
+        public District BuildDistrict(SqlDataReader reader)
         {
-            Salesperson salesperson = new Salesperson();
+            District district = new District();
             int idOrdinal = reader.GetOrdinal("id");
             int nameOrdinal = reader.GetOrdinal("name");
+            int primarySalespersonIdOrdinal = reader.GetOrdinal("primary_salesperson_id");
             try
             {
-                if (!reader.IsDBNull(idOrdinal) && !reader.IsDBNull(nameOrdinal))
+                if (!reader.IsDBNull(idOrdinal) && !reader.IsDBNull(nameOrdinal) && !reader.IsDBNull(primarySalespersonIdOrdinal))
                 {
-                    salesperson.Id = reader.GetInt32(idOrdinal);
-                    salesperson.Name = reader.GetString(nameOrdinal);
+                    district.Id = reader.GetInt32(idOrdinal);
+                    district.Name = reader.GetString(nameOrdinal);
+                    SalespersonDAL salespersonDal = new SalespersonDAL();
+                    district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
+                    DistrictSalespersonJunctionDAL DsjDAL = new DistrictSalespersonJunctionDAL();
+                    district.Salespersons = DsjDAL.GetSalespersonsById(district.Id);
                 }
                 else
                 {
-                    salesperson.Name = "Salesperson not found";
+                    district.Name = "District not found";
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error in BuildSalesperson: " + e.Message);
+                Console.WriteLine("Error in BuildDistrict: " + e.Message);
             }
-            return salesperson;
+            return district;
         }
     }
 }
+

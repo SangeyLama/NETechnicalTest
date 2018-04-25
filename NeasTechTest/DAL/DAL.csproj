@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DistrictDAL.cs" />
+    <Compile Include="DistrictSalespersonJunctionDAL.cs" />
     <Compile Include="SalespersonDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
