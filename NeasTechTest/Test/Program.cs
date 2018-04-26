@@ -13,9 +13,9 @@ namespace Test
         static void Main(string[] args)
         {
 
-            SalespersonDAL spDAL = new SalespersonDAL();
-            DistrictDAL dDAL = new DistrictDAL();
-            DistrictSalespersonJunctionDAL DsjDAL = new DistrictSalespersonJunctionDAL();
+            SalespersonDAO spDAL = new SalespersonDAO();
+            DistrictDAO dDAL = new DistrictDAO();
+            DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
 
             //Test Insert
             //var result = spDAL.Insert(new Salesperson { Name = "Sangey" });

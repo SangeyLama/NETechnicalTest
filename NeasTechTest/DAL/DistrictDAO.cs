@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace DAL
 {
-    public class DistrictDAL
+    public class DistrictDAO
     {
         private string ConnectionString { get; set; }
 
-        public DistrictDAL()
+        public DistrictDAO()
         {
             ConnectionString = ConfigurationManager.ConnectionStrings["NeasDBConnection"].ToString();
         }
@@ -33,7 +33,7 @@ namespace DAL
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@name", district.Name);
-                        command.Parameters.AddWithValue("@salespersonID", district.PrimarySalesperson.Id);
+                        command.Parameters.AddWithValue("@salespersonId", district.PrimarySalesperson.Id);
                         Object newId = command.ExecuteScalar();
                         lastId = Convert.ToInt32(newId);
                     }
@@ -166,9 +166,9 @@ namespace DAL
                 {
                     district.Id = reader.GetInt32(idOrdinal);
                     district.Name = reader.GetString(nameOrdinal);
-                    SalespersonDAL salespersonDal = new SalespersonDAL();
+                    SalespersonDAO salespersonDal = new SalespersonDAO();
                     district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
-                    DistrictSalespersonJunctionDAL DsjDAL = new DistrictSalespersonJunctionDAL();
+                    DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
                     district.Salespersons = DsjDAL.GetSalespersonsById(district.Id);
                 }
                 else

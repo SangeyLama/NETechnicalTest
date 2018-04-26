@@ -9,11 +9,11 @@ using System.Data.SqlClient;
 
 namespace DAL
 {
-    public class SalespersonDAL
+    public class SalespersonDAO
     {
         private string ConnectionString { get; set; }
 
-        public SalespersonDAL()
+        public SalespersonDAO()
         {
             ConnectionString = ConfigurationManager.ConnectionStrings["NeasDBConnection"].ToString();
         }

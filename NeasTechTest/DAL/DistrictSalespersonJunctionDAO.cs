@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace DAL
 {
-    public class DistrictSalespersonJunctionDAL
+    public class DistrictSalespersonJunctionDAO
     {
         private string ConnectionString { get; set; }
 
-        public DistrictSalespersonJunctionDAL()
+        public DistrictSalespersonJunctionDAO()
         {
             ConnectionString = ConfigurationManager.ConnectionStrings["NeasDBConnection"].ToString();
         }
@@ -84,7 +84,7 @@ namespace DAL
                         command.Parameters.AddWithValue("@salespersonId", salespersonId);
                         SqlDataReader reader = command.ExecuteReader();
                         int districtIdOrdinal = reader.GetOrdinal("district_id");
-                        DistrictDAL dDAL = new DistrictDAL();
+                        DistrictDAO dDAL = new DistrictDAO();
                         while (reader.Read())
                         {
                             var foundDistrict = dDAL.GetById(reader.GetInt32(districtIdOrdinal));
@@ -115,7 +115,7 @@ namespace DAL
                         command.Parameters.AddWithValue("@districtId", districtId);
                         SqlDataReader reader = command.ExecuteReader();
                         int salespersonIdOrdinal = reader.GetOrdinal("salesperson_id");
-                        SalespersonDAL spDAL = new SalespersonDAL();
+                        SalespersonDAO spDAL = new SalespersonDAO();
                         while (reader.Read())
                         {
                             var foundSalesperson = spDAL.GetById(reader.GetInt32(salespersonIdOrdinal));
