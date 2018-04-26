@@ -16,12 +16,13 @@ namespace Test
             SalespersonDAO spDAL = new SalespersonDAO();
             DistrictDAO dDAL = new DistrictDAO();
             DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
+            StoreDAO sDAO = new StoreDAO();
 
             //Test Insert
             //var result = spDAL.Insert(new Salesperson { Name = "Sangey" });
 
             //Test get single
-            //var result = spDAL.GetSalespersonById(1).ToString();
+            //var result = spDAL.GetById(1).ToString();
 
             //Test get all
             //var result = spDAL.GetAll();
@@ -51,7 +52,7 @@ namespace Test
             //}
 
             //Test District Update
-            //dDAL.Update(new District { Id = 1, Name = "North Denmark Updated", PrimarySalesperson = spDAL.GetById(4) });
+            //var result = dDAL.Update(new District { Id = 1, Name = "North Denmark Updated", PrimarySalesperson = spDAL.GetById(4) });
 
             //Test District Delete
             //dDAL.Delete(dDAL.GetById(3));
@@ -76,9 +77,29 @@ namespace Test
             //    Console.WriteLine(sp.ToString());
             //}
 
-            var result = dDAL.GetByIdDataSet(1).ToString();
+            //Test Get District using a data set
+            //var result = dDAL.GetByIdDataSet(3).ToString();
 
-            Console.WriteLine(result);
+            //Test Store Insert
+            //var result = sDAO.Insert(new Store { Name = "Fotex" });
+
+            //Test Store GetByID
+            //var result = sDAO.GetById(1);
+
+            //Test Store GetAll
+            var result = sDAO.GetAll();
+            foreach (Store s in result)
+            {
+                Console.WriteLine(s.ToString());
+            }
+
+            // Test Store Update
+            //var result = sDAO.Update(new Store { Id = 1, Name = "Rema 1000 Updated"});
+
+            //Test Store Delete
+            //var result = sDAO.Delete(sDAO.GetById(3));
+
+            //Console.WriteLine(result);
             Console.ReadLine();
         }
     }

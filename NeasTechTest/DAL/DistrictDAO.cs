@@ -176,6 +176,12 @@ namespace DAL
             adapter.SelectCommand.Parameters.Add("@districtId1", SqlDbType.Int).Value = id;
             adapter.Fill(districtSalesperson, "District_Salesperson_Junction");
 
+            string storeQuery =
+                "SELECT * FROM Stores where district_id = @districtId2";
+            adapter.SelectCommand.CommandText = storeQuery;
+            adapter.SelectCommand.Parameters.Add("@districtId2", SqlDbType.Int).Value = id;
+            adapter.Fill(districtSalesperson, "Stores");
+
             //Not sure if necessary
             //var PKdistSales = new DataColumn[2];
             //PKdistSales[0] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"];
@@ -187,6 +193,9 @@ namespace DAL
 
             districtSalesperson.Relations.Add("SalespersonJunc", districtSalesperson.Tables["Salespersons"].Columns["id"],
                 districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"]);
+
+            districtSalesperson.Relations.Add("DistStore", districtSalesperson.Tables["Districts"].Columns["id"],
+                districtSalesperson.Tables["Stores"].Columns["district_id"]);
 
             return BuildDistrict(districtSalesperson);
 
@@ -206,6 +215,16 @@ namespace DAL
                 primarySP.Id = (int)primarySPRowData.FirstOrDefault()["id"];
                 primarySP.Name = (string)primarySPRowData.FirstOrDefault()["name"];
                 districtObject.PrimarySalesperson = primarySP;
+
+                var tempStoreList = new List<Store>();
+                foreach(DataRow distStoreRow in distRow.GetChildRows(dataSet.Relations["DistStore"]))
+                {
+                    int storeId = (int)distStoreRow["id"];
+                    string storeName = (string)distStoreRow["name"];
+                    var tempStore = new Store { Id = storeId, Name = storeName };
+                    tempStoreList.Add(tempStore);
+                }
+                districtObject.Stores = tempStoreList;
 
                 var tempSPList = new List<Salesperson>();
                 foreach(DataRow distSalesRow in distRow.GetChildRows(dataSet.Relations["DistrictJunc"]))
