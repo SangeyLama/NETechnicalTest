@@ -41,7 +41,7 @@ namespace Test
             //var result = dDAL.Insert(new District { Name = "East Denmark", PrimarySalesperson = spDAL.GetById(5) });
 
             //Test District Get
-            var result = dDAL.GetById(1).ToString();
+            //var result = dDAL.GetById(1).ToString();
 
             //Test District GetAll
             //var result = dDAL.GetAll();
@@ -75,6 +75,8 @@ namespace Test
             //{
             //    Console.WriteLine(sp.ToString());
             //}
+
+            var result = dDAL.GetByIdDataSet(1).ToString();
 
             Console.WriteLine(result);
             Console.ReadLine();

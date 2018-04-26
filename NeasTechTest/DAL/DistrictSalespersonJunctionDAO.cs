@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -31,8 +32,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@districtId", district.Id);
-                        command.Parameters.AddWithValue("@salespersonId", salesperson.Id);
+                        command.Parameters.Add("@districtId", SqlDbType.Int).Value = district.Id;
+                        command.Parameters.Add("@salespersonId", SqlDbType.Int).Value = salesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -56,8 +57,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@districtId", district.Id);
-                        command.Parameters.AddWithValue("@salespersonId", salesperson.Id);
+                        command.Parameters.Add("@districtId", SqlDbType.Int).Value = district.Id;
+                        command.Parameters.Add("@salespersonId", SqlDbType.Int).Value = salesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -81,7 +82,7 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@salespersonId", salespersonId);
+                        command.Parameters.Add("@salespersonId", SqlDbType.Int).Value = salespersonId;
                         SqlDataReader reader = command.ExecuteReader();
                         int districtIdOrdinal = reader.GetOrdinal("district_id");
                         DistrictDAO dDAL = new DistrictDAO();
@@ -112,7 +113,7 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@districtId", districtId);
+                        command.Parameters.Add("@districtId", SqlDbType.Int).Value = districtId;
                         SqlDataReader reader = command.ExecuteReader();
                         int salespersonIdOrdinal = reader.GetOrdinal("salesperson_id");
                         SalespersonDAO spDAL = new SalespersonDAO();

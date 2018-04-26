@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -32,8 +33,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", district.Name);
-                        command.Parameters.AddWithValue("@salespersonId", district.PrimarySalesperson.Id);
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
+                        command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         Object newId = command.ExecuteScalar();
                         lastId = Convert.ToInt32(newId);
                     }
@@ -114,9 +115,9 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", district.Name);
-                        command.Parameters.AddWithValue("@primarySalespersonId", district.PrimarySalesperson.Id);
-                        command.Parameters.AddWithValue("@id", district.Id);
+                        command.Parameters.Add("@id", SqlDbType.Int).Value = district.Id;
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
+                        command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -140,9 +141,9 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@id", district.Id);
-                        command.Parameters.AddWithValue("@name", district.Name);
-                        command.Parameters.AddWithValue("@primarySalespersonId", district.PrimarySalesperson.Id);
+                        command.Parameters.Add("@id", SqlDbType.Int).Value = district.Id;
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
+                        command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -152,6 +153,71 @@ namespace DAL
                 Console.WriteLine("Error:" + e.Message);
             }
             return rowsAffected;
+        }
+
+        public District GetByIdDataSet(int id)
+        {
+            DataSet districtSalesperson = new DataSet("districtSalesperson");
+            string districtsQuery =
+                "SELECT * FROM Districts WHERE id = @districtId";
+            SqlDataAdapter adapter = new SqlDataAdapter(districtsQuery, ConnectionString);
+            adapter.SelectCommand.Parameters.Add("@districtId", SqlDbType.Int).Value = id;
+            
+            adapter.Fill(districtSalesperson, "Districts");
+
+            string salespersonQuery =
+                "SELECT * FROM Salespersons";
+            adapter.SelectCommand.CommandText = salespersonQuery;
+            adapter.Fill(districtSalesperson, "Salespersons");
+
+            string districtSalespersonQuery =
+                "SELECT * FROM District_Salesperson_Junction WHERE district_id = @districtId1";
+            adapter.SelectCommand.CommandText = districtSalespersonQuery;
+            adapter.SelectCommand.Parameters.Add("@districtId1", SqlDbType.Int).Value = id;
+            adapter.Fill(districtSalesperson, "District_Salesperson_Junction");
+
+            //Not sure if necessary
+            //var PKdistSales = new DataColumn[2];
+            //PKdistSales[0] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"];
+            //PKdistSales[1] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"];
+            //districtSalesperson.Tables["District_Salesperson_Junction"].PrimaryKey = PKdistSales;
+
+            districtSalesperson.Relations.Add("DistrictJunc", districtSalesperson.Tables["Districts"].Columns["id"],
+                districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"]);
+
+            districtSalesperson.Relations.Add("SalespersonJunc", districtSalesperson.Tables["Salespersons"].Columns["id"],
+                districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"]);
+
+            return BuildDistrict(districtSalesperson);
+
+        }
+
+        public District BuildDistrict(DataSet dataSet)
+        {
+            District districtObject = null;
+            foreach (DataRow distRow in dataSet.Tables["Districts"].Rows)
+            {
+                int id = (int)distRow["id"];
+                string name = (string)distRow["name"];
+                districtObject = new District { Id = id, Name = name };
+
+                var primarySP = new Salesperson();
+                var primarySPRowData = dataSet.Tables["Salespersons"].Select("id = " + (int)distRow["primary_salesperson_id"]);
+                primarySP.Id = (int)primarySPRowData.FirstOrDefault()["id"];
+                primarySP.Name = (string)primarySPRowData.FirstOrDefault()["name"];
+                districtObject.PrimarySalesperson = primarySP;
+
+                var tempSPList = new List<Salesperson>();
+                foreach(DataRow distSalesRow in distRow.GetChildRows(dataSet.Relations["DistrictJunc"]))
+                {
+                    int spId = (int)distSalesRow.GetParentRow(dataSet.Relations["SalespersonJunc"])["id"];
+                    string spName = (string)distSalesRow.GetParentRow(dataSet.Relations["SalespersonJunc"])["name"];
+                    var tempSalesperson = new Salesperson { Id = spId, Name = spName };
+                    tempSPList.Add(tempSalesperson);
+                }
+                districtObject.Salespersons = tempSPList;
+            }
+            return districtObject;
         }
 
         public District BuildDistrict(SqlDataReader reader)
@@ -173,7 +239,7 @@ namespace DAL
                 }
                 else
                 {
-                    district.Name = "District not found";
+                    return null;
                 }
             }
             catch (Exception e)
@@ -182,6 +248,8 @@ namespace DAL
             }
             return district;
         }
+
+
     }
 }
 

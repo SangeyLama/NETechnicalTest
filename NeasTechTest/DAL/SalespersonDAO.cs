@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Model;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace DAL
 {
@@ -32,7 +33,7 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = salesperson.Name;
                         Object newId = command.ExecuteScalar();
                         lastId = Convert.ToInt32(newId);
                     }
@@ -57,7 +58,7 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@id", id);
+                        command.Parameters.Add("@id", SqlDbType.Int).Value = id;
                         SqlDataReader reader = command.ExecuteReader();
                         if (reader.Read())
                         {
@@ -113,8 +114,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
-                        command.Parameters.AddWithValue("@id", salesperson.Id);
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = salesperson.Name;
+                        command.Parameters.Add("@id", SqlDbType.Int).Value = salesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -138,8 +139,8 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@name", salesperson.Name);
-                        command.Parameters.AddWithValue("@id", salesperson.Id);
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = salesperson.Name;
+                        command.Parameters.Add("@id", SqlDbType.Int).Value = salesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -165,7 +166,7 @@ namespace DAL
                 }
                 else
                 {
-                    salesperson.Name = "Salesperson not found";
+                    return null;
                 }
             }
             catch (Exception e)
