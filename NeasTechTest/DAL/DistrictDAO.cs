@@ -24,7 +24,7 @@ namespace DAL
             int lastId = 0;
             string query =
                 "INSERT INTO Districts(name,primary_salesperson_id)" +
-                "Values (@name, @salespersonId);" +
+                "Values (@name, @primarySalespersonId);" +
                 "SELECT CAST(scope_identity() as int)";
             try
             {
@@ -33,7 +33,7 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Name;
                         command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         Object newId = command.ExecuteScalar();
                         lastId = Convert.ToInt32(newId);
@@ -116,7 +116,7 @@ namespace DAL
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.Add("@id", SqlDbType.Int).Value = district.Id;
-                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
+                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Name;
                         command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }

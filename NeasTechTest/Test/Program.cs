@@ -102,7 +102,7 @@ namespace Test
             //Test Store Delete
             //var result = sDAO.Delete(sDAO.GetById(3));
 
-            var result = InsertDistrict(new District { Id = 1, Name = "East Denmark", PrimarySalesperson = spDAL.GetById(4) });
+            var result = InsertDistrict(new District { Id = 1, Name = "Central Denmark", PrimarySalesperson = spDAL.GetById(4) });
 
             Console.WriteLine(result.ToString());
             Console.ReadLine();
@@ -112,9 +112,12 @@ namespace Test
         {
             var dataString = JsonConvert.SerializeObject(data);
 
-            var restClient = new RestClient("https://http://localhost:54048/api/District");
-            var restRequest = new RestRequest(Method.POST);
-            return restClient.Execute<District>(restRequest) as District;
+            var client = new RestClient("http://localhost:54048/api/District/");
+            var request = new RestRequest(Method.POST);
+            request.AddParameter("application/json; charset=utf-8", dataString, ParameterType.RequestBody);
+            request.RequestFormat = DataFormat.Json;
+            IRestResponse<District> response = client.Execute<District>(request);
+            return response.Data;
 
         }
     }

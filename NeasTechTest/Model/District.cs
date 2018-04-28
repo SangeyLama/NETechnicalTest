@@ -16,18 +16,22 @@ namespace Model
 
         public override string ToString()
         {
-            string line = String.Format("District: Id: {0} \t Name: {1} \nPrimary Salesperson: {2} ", Id, Name, PrimarySalesperson.ToString());
-            if (Salespersons?.Count() != 0)
+            string line = String.Format("Id: {0} \nName: {1} \nPrimary Salesperson: {2} ", Id, Name, PrimarySalesperson?.ToString());
+            if (Salespersons?.Count() != 0 && Salespersons != null)
+            {
                 line += "\nSecondary Salespersons:";
-            foreach (Salesperson sp in Salespersons)
-            {
-                line += String.Format("\n {0}", sp.ToString());
+                foreach (Salesperson sp in Salespersons)
+                {
+                    line += String.Format("\n {0}", sp.ToString());
+                }
             }
-            if (Stores?.Count() != 0)
-                line += "\nStores in district:";
-            foreach (Store s in Stores)
+            if (Stores?.Count() != 0 && Stores != null)
             {
-                line += String.Format("\n {0}", s.ToString());
+                line += "\nStores in district:";
+                foreach (Store s in Stores)
+                {
+                    line += String.Format("\n {0}", s.ToString());
+                }
             }
             return line;
         }

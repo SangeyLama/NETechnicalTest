@@ -42,20 +42,47 @@ namespace WebAPI.Controllers
         [ResponseType(typeof(District))]
         public IHttpActionResult PostDistrict([FromBody]District district)
         {
-            //if(district == null)
-            //{
-            //    return BadRequest("Invalid passed data");
-            //}
+            if (district == null)
+            {
+                return BadRequest("Invalid passed data");
+            }
 
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(ModelState);
-            //}
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             int newId = 0;
             try
             {
                 newId = dDAO.Insert(district);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            return CreatedAtRoute("DefaultApi", new { id = newId }, district);
+        }
+
+        [HttpPut]
+        [ResponseType(typeof(District))]
+        public IHttpActionResult PutDistrict([FromBody]District district)
+        {
+            if (district == null)
+            {
+                return BadRequest("Invalid passed data");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            int newId = 0;
+            try
+            {
+                newId = dDAO.UpdateDS(district);
             }
             catch (Exception e)
             {
