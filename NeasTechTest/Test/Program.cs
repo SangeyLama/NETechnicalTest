@@ -1,5 +1,7 @@
 ﻿using DAL;
 using Model;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,6 +55,7 @@ namespace Test
 
             //Test District Update
             //var result = dDAL.Update(new District { Id = 1, Name = "North Denmark Updated", PrimarySalesperson = spDAL.GetById(4) });
+            //var result = dDAL.UpdateDS(new District { Id = 1, Name = "North Denmark Update2", PrimarySalesperson = spDAL.GetById(5) });
 
             //Test District Delete
             //dDAL.Delete(dDAL.GetById(3));
@@ -87,11 +90,11 @@ namespace Test
             //var result = sDAO.GetById(1);
 
             //Test Store GetAll
-            var result = sDAO.GetAll();
-            foreach (Store s in result)
-            {
-                Console.WriteLine(s.ToString());
-            }
+            //var result = sDAO.GetAll();
+            //foreach (Store s in result)
+            //{
+            //    Console.WriteLine(s.ToString());
+            //}
 
             // Test Store Update
             //var result = sDAO.Update(new Store { Id = 1, Name = "Rema 1000 Updated"});
@@ -99,8 +102,20 @@ namespace Test
             //Test Store Delete
             //var result = sDAO.Delete(sDAO.GetById(3));
 
-            //Console.WriteLine(result);
+            var result = InsertDistrict(new District { Id = 1, Name = "East Denmark", PrimarySalesperson = spDAL.GetById(4) });
+
+            Console.WriteLine(result.ToString());
             Console.ReadLine();
+        }
+
+        public static District InsertDistrict(District data)
+        {
+            var dataString = JsonConvert.SerializeObject(data);
+
+            var restClient = new RestClient("https://http://localhost:54048/api/District");
+            var restRequest = new RestRequest(Method.POST);
+            return restClient.Execute<District>(restRequest) as District;
+
         }
     }
 }

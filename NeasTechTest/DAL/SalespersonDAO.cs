@@ -131,7 +131,7 @@ namespace DAL
         {
             int rowsAffected = 0;
             string query =
-                "DELETE FROM Salespersons WHERE id = @id AND name = @name";
+                "DELETE FROM Salespersons WHERE id = @id";
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -139,7 +139,6 @@ namespace DAL
                     connection.Open();
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = salesperson.Name;
                         command.Parameters.Add("@id", SqlDbType.Int).Value = salesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }

@@ -129,11 +129,63 @@ namespace DAL
             return rowsAffected;
         }
 
+        public int UpdateDS(District district)
+        {
+            int rowsAffected = 0;     
+            string selectQuery =
+                "SELECT * FROM Districts Where id = @id";
+            string updateQuery =
+                "UPDATE Districts SET name = @name, primary_salesperson_id = @primarySalespersonId WHERE id = @oldId AND name = @oldName AND primary_salesperson_id = @oldPrimarySalespersonId";
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                using (SqlDataAdapter adapter = new SqlDataAdapter(selectQuery, connection))
+                {
+                    adapter.SelectCommand.Parameters.Add("@id", SqlDbType.Int).Value = district.Id;
+                    adapter.UpdateCommand = new SqlCommand(updateQuery, connection);
+                    adapter.UpdateCommand.Parameters.Add("@name", SqlDbType.NVarChar, 50, "name");
+                    adapter.UpdateCommand.Parameters.Add("@primarySalespersonId", SqlDbType.Int).SourceColumn = "primary_salesperson_id";
+
+                    SqlParameter parameter = adapter.UpdateCommand.Parameters.Add("@oldId", SqlDbType.Int);
+                    parameter.SourceColumn = "id";
+                    parameter.SourceVersion = DataRowVersion.Original;
+                    parameter = adapter.UpdateCommand.Parameters.Add("@oldName", SqlDbType.NVarChar, 50, "name");
+                    parameter.SourceVersion = DataRowVersion.Original;
+                    parameter = adapter.UpdateCommand.Parameters.Add("@oldPrimarySalespersonId", SqlDbType.Int);
+                    parameter.SourceColumn = "primary_salesperson_id";
+                    parameter.SourceVersion = DataRowVersion.Original;
+
+                    adapter.RowUpdated += new SqlRowUpdatedEventHandler(OnRowUpdated);
+
+                    DataTable districtTable = new DataTable();
+                    adapter.Fill(districtTable);
+
+                    DataRow districtRow = districtTable.Rows[0];
+                    districtRow["name"] = district.Name;
+                    districtRow["primary_salesperson_id"] = district.PrimarySalesperson.Id;
+
+                    rowsAffected = adapter.Update(districtTable);
+
+                    if(districtRow.HasErrors)
+                            Console.WriteLine("Update error:" + "\n" + districtRow.RowError);
+                }                
+            }
+            return rowsAffected;
+        }
+
+        protected static void OnRowUpdated(object sender, SqlRowUpdatedEventArgs args)
+        {
+            if (args.RecordsAffected == 0)
+            {
+                args.Row.RowError = "Optimistic Concurrency Violation Encountered";
+                args.Status = UpdateStatus.SkipCurrentRow;
+            }
+        }
+
         public int Delete(District district)
         {
             int rowsAffected = 0;
             string query =
-                "DELETE FROM Districts WHERE id = @id AND name = @name AND primary_salesperson_id = @primarySalespersonId";
+                "DELETE FROM Districts WHERE id = @id";
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -142,8 +194,6 @@ namespace DAL
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.Add("@id", SqlDbType.Int).Value = district.Id;
-                        command.Parameters.Add("@name", SqlDbType.NVarChar, 50).Value = district.Id;
-                        command.Parameters.Add("@primarySalespersonId", SqlDbType.Int).Value = district.PrimarySalesperson.Id;
                         rowsAffected = command.ExecuteNonQuery();
                     }
                 }
@@ -162,7 +212,7 @@ namespace DAL
                 "SELECT * FROM Districts WHERE id = @districtId";
             SqlDataAdapter adapter = new SqlDataAdapter(districtsQuery, ConnectionString);
             adapter.SelectCommand.Parameters.Add("@districtId", SqlDbType.Int).Value = id;
-            
+
             adapter.Fill(districtSalesperson, "Districts");
 
             string salespersonQuery =
@@ -217,7 +267,7 @@ namespace DAL
                 districtObject.PrimarySalesperson = primarySP;
 
                 var tempStoreList = new List<Store>();
-                foreach(DataRow distStoreRow in distRow.GetChildRows(dataSet.Relations["DistStore"]))
+                foreach (DataRow distStoreRow in distRow.GetChildRows(dataSet.Relations["DistStore"]))
                 {
                     int storeId = (int)distStoreRow["id"];
                     string storeName = (string)distStoreRow["name"];
@@ -227,7 +277,7 @@ namespace DAL
                 districtObject.Stores = tempStoreList;
 
                 var tempSPList = new List<Salesperson>();
-                foreach(DataRow distSalesRow in distRow.GetChildRows(dataSet.Relations["DistrictJunc"]))
+                foreach (DataRow distSalesRow in distRow.GetChildRows(dataSet.Relations["DistrictJunc"]))
                 {
                     int spId = (int)distSalesRow.GetParentRow(dataSet.Relations["SalespersonJunc"])["id"];
                     string spName = (string)distSalesRow.GetParentRow(dataSet.Relations["SalespersonJunc"])["name"];
@@ -251,10 +301,10 @@ namespace DAL
                 {
                     district.Id = reader.GetInt32(idOrdinal);
                     district.Name = reader.GetString(nameOrdinal);
-                    SalespersonDAO salespersonDal = new SalespersonDAO();
-                    district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
-                    DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
-                    district.Salespersons = DsjDAL.GetSalespersonsById(district.Id);
+                    //SalespersonDAO salespersonDal = new SalespersonDAO();
+                    //district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
+                    //DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
+                    //district.Salespersons = DsjDAL.GetSalespersonsById(district.Id);
                 }
                 else
                 {
