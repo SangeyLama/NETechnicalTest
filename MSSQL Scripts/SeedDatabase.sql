@@ -1,12 +1,12 @@
 Use NeasTest
 
 INSERT INTO Salespersons(name)
-Values ('Jens Jensen'), ('John Smith'), ('Alice Johnson'), ('Mary Smith'), ('Lisa Stanley'), ('Michael Fox'), ('Sam Rockwell'), ('Samuel Jackson'), ('Jack Nicholson')
+Values ('Jens Jensen'), ('John Smith'), ('Alice Johnson'), ('Mary Smith'), ('Lisa Stanley'), ('Michael Fox'), ('Sam Rockwell'), ('Samuel Jackson'), ('Jack Nicholson') ('Test')
 
 GO
 
 INSERT INTO Districts(name,primary_salesperson_id)
-Values ('North Denmark', 1), ('South Denmark', 2), ('West Denmark', 3), ('East Denmark', 4), ('Central Denmark', 5)
+Values ('North Denmark', 1), ('South Denmark', 2), ('West Denmark', 3), ('East Denmark', 4), ('Central Denmark', 5), ('Test', 1)
 
 GO
 INSERT INTO District_Salesperson_Junction(district_id, salesperson_id)

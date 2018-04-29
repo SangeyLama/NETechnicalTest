@@ -42,7 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DistrictDAO.cs" />
-    <Compile Include="DistrictSalespersonJunctionDAO.cs" />
     <Compile Include="SalespersonDAO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StoreDAO.cs" />

@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.ComponentModel;
 using WPF.WebAPI;
+using System.Net;
 
 namespace WPF
 {
@@ -25,6 +26,8 @@ namespace WPF
         private MainWindow parent;
         private bool editsMade;
         private List<Salesperson> remainingSalespersons;
+        private DistrictAPI districtAPI = new DistrictAPI();
+        private SalespersonAPI salespersonAPI = new SalespersonAPI();
         public EditDistrictSalespersons(District district, MainWindow parent)
         {
             InitializeComponent();
@@ -47,7 +50,7 @@ namespace WPF
             {
                 StoresLV.ItemsSource = district.Stores;
             }
-            IEnumerable<Salesperson> salespersons = SalespersonAPI.GetAll();
+            IEnumerable<Salesperson> salespersons = salespersonAPI.GetAll();
             remainingSalespersons = new List<Salesperson>();
             foreach(Salesperson s in salespersons)
             {
@@ -117,15 +120,25 @@ namespace WPF
         {
             if (editsMade)
             {
-                DistrictAPI.Update(district);
-                editsMade = false;
+                var result = districtAPI.Update(district);
+                if(result.StatusCode == HttpStatusCode.Accepted)
+                {
+                    editsMade = false;
+                    MessageBox.Show("Changes Saved");
+                    this.Close();
+                    parent.Show();
+                    parent.DistrictLV.ItemsSource = districtAPI.GetAll();
+                    parent.DistrictInfo.Content = null;
+                    parent.DistrictInfo.Content = district;
+                    parent.SalespersonsLV.ItemsSource = district.Salespersons;
+                }
+                else
+                {
+                    MessageBox.Show("Error saving changes.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                
             }
-            this.Close();
-            parent.Show();
-            parent.DistrictLV.ItemsSource = DistrictAPI.GetAll();
-            parent.DistrictInfo.Content = null;
-            parent.DistrictInfo.Content = district;
-            parent.SalespersonsLV.ItemsSource = district.Salespersons;
+            
         }
 
         private void Cancel_Button_Click(object sender, RoutedEventArgs e)
@@ -142,7 +155,7 @@ namespace WPF
                 MessageBoxResult result =
                   MessageBox.Show(
                     msg,
-                    "Data App",
+                    "Warning",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
                 if (result == MessageBoxResult.No)
@@ -153,7 +166,11 @@ namespace WPF
                 else
                 {
                     parent.Show();
-                }                
+                }
+            }
+            else
+            {
+                parent.Show();
             }
         }
 

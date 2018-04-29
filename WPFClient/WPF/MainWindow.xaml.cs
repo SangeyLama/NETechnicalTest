@@ -23,6 +23,7 @@ namespace WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        private DistrictAPI districtAPI = new DistrictAPI();
         public MainWindow()
         {
             InitializeComponent();
@@ -30,7 +31,7 @@ namespace WPF
 
         private void Get_Districts_Button_Click(object sender, RoutedEventArgs e)
         {
-            DistrictLV.ItemsSource = DistrictAPI.GetAll();
+            DistrictLV.ItemsSource = districtAPI.GetAll();
         }
 
         private void DistrictSelected(object sender, RoutedEventArgs e)
@@ -38,7 +39,7 @@ namespace WPF
             var district = DistrictLV.SelectedItem as District;
             if (district != null)
             {
-                district = DistrictAPI.GetById(district);
+                district = districtAPI.GetById(district);
                 DistrictInfo.Content = district;
                 if (district.Salespersons != null || district.Salespersons.Count() != 0)
                 {
@@ -56,7 +57,7 @@ namespace WPF
             var district = DistrictLV.SelectedItem as District;
             if (district != null)
             {
-                district = DistrictAPI.GetById(district);
+                district = districtAPI.GetById(district);
                 this.Hide();
                 EditDistrictSalespersons edit = new EditDistrictSalespersons(district, this);
                 edit.Show();

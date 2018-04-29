@@ -12,12 +12,12 @@ namespace Test
 {
     class Program
     {
+        //Quick Testing for methods
         static void Main(string[] args)
         {
 
             SalespersonDAO spDAL = new SalespersonDAO();
             DistrictDAO dDAL = new DistrictDAO();
-            DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
             StoreDAO sDAO = new StoreDAO();
 
             //Test Insert
@@ -60,26 +60,6 @@ namespace Test
             //Test District Delete
             //dDAL.Delete(dDAL.GetById(3));
 
-            //Test DistrictSalespersonJunction Insert
-            //var result = DsjDAL.Insert(dDAL.GetById(2), spDAL.GetById(6));
-
-            //Test DistrictSalespersonJunction Delete
-            //var result = DsjDAL.Delete(dDAL.GetById(1), spDAL.GetById(4));
-
-            //Test DistrictSalespersonJunction Get Districts
-            //var result = DsjDAL.GetDistrictsById(6);
-            //foreach (District d in result)
-            //{
-            //    Console.WriteLine(d.ToString());
-            //}
-
-            //Test DistrictSalespersonJunction Get Salespersons
-            //var result = DsjDAL.GetSalespersonsById(1);
-            //foreach (Salesperson sp in result)
-            //{
-            //    Console.WriteLine(sp.ToString());
-            //}
-
             //Test Get District using a data set
             //var result = dDAL.GetByIdDataSet(3).ToString();
 
@@ -102,16 +82,16 @@ namespace Test
             //Test Store Delete
             //var result = sDAO.Delete(sDAO.GetById(3));
 
-            District dist = dDAL.GetByIdDataSet(2);
-            var tempSalespersons = new List<Salesperson>();
-            tempSalespersons.Add(spDAL.GetById(1));
-            tempSalespersons.Add(spDAL.GetById(3));
-            tempSalespersons.Add(spDAL.GetById(5));
-            tempSalespersons.Add(spDAL.GetById(7));
-            dist.Salespersons = tempSalespersons;
-            var result = dDAL.UpdateSalespersonsList(dist);
+            //District dist = dDAL.GetByIdDataSet(2);
+            //var tempSalespersons = new List<Salesperson>();
+            //tempSalespersons.Add(spDAL.GetById(1));
+            //tempSalespersons.Add(spDAL.GetById(3));
+            //tempSalespersons.Add(spDAL.GetById(5));
+            //tempSalespersons.Add(spDAL.GetById(7));
+            //dist.Salespersons = tempSalespersons;
+            //var result = dDAL.UpdateSalespersonsList(dist);
 
-            Console.WriteLine(result.ToString());
+            //Console.WriteLine(result.ToString());
             Console.ReadLine();
         }
 

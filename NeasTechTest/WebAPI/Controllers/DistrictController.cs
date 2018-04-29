@@ -13,19 +13,18 @@ namespace WebAPI.Controllers
 {
     public class DistrictController : ApiController
     {
-        List<District> districts = new List<District>();
         DistrictDAO dDAO = new DistrictDAO();
 
         public DistrictController() { }
 
-        public DistrictController(List<District> districts)
+        public IHttpActionResult GetAllDistricts()
         {
-            this.districts = districts;
-        }
-
-        public IEnumerable<District> GetAllDistricts()
-        {
-            return dDAO.GetAll();
+            List<District> districts = dDAO.GetAll() as List<District>;
+            if(districts == null)
+            {
+                return NotFound();
+            }
+            return Ok(districts);
         }
 
         public IHttpActionResult GetDistrict(int id)
@@ -93,7 +92,7 @@ namespace WebAPI.Controllers
                 return BadRequest("e.message");
             }
 
-            return Ok();
+            return Content(HttpStatusCode.Accepted, district);
         }
 
     }

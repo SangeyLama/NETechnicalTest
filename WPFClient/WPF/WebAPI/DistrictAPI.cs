@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace WPF.WebAPI
 {
-    public static class DistrictAPI
+    public class DistrictAPI
     {
-        public static IEnumerable<District> GetAll()
+        public IEnumerable<District> GetAll()
         {
             var client = new RestClient("http://localhost:54048/api/District/");
             var request = new RestRequest(Method.GET);
             IRestResponse<List<District>> response = client.Execute<List<District>>(request);
             return response.Data;
         }
-        public static District GetById(District district)
+        public District GetById(District district)
         {
             var client = new RestClient("http://localhost:54048/");
             var request = new RestRequest("api/District/{id}", Method.GET);
@@ -26,13 +26,14 @@ namespace WPF.WebAPI
             return response.Data;
         }
 
-        public static void Update(District district)
+        public IRestResponse Update(District district)
         {
             string districtData = JsonConvert.SerializeObject(district);
             var client = new RestClient("http://localhost:54048/");
             var request = new RestRequest("api/District/", Method.PUT);
             request.AddParameter("application/json; charset=utf-8", districtData, ParameterType.RequestBody);
-            IRestResponse response = client.Execute<District>(request);            
+            IRestResponse response = client.Execute<District>(request);
+            return response;
         }
     }
 }

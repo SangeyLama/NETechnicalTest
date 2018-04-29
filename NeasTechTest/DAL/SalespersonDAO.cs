@@ -50,7 +50,7 @@ namespace DAL
         {
             string query =
                 "SELECT * FROM Salespersons WHERE id = @id";
-            Salesperson found = new Salesperson();
+            Salesperson found = null;
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))

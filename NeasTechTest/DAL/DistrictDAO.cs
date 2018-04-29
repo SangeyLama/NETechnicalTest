@@ -129,6 +129,7 @@ namespace DAL
             return rowsAffected;
         }
 
+        //Using Data Adapters instead of SQL Commands like above
         public int UpdateDS(District district)
         {
             int rowsAffected = 0;
@@ -172,6 +173,7 @@ namespace DAL
             return rowsAffected;
         }
 
+        //part of main use case for updating salespersons list on a district object
         public int UpdateSalespersonsList(District district)
         {
             int rowsAffected = 0;
@@ -416,7 +418,6 @@ namespace DAL
             }
             return district;
         }
-
 
     }
 }

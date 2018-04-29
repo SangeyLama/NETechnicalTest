@@ -12,19 +12,18 @@ namespace WebAPI.Controllers
 {
     public class SalespersonController : ApiController
     {
-        List<Salesperson> salespersons = new List<Salesperson>();
         SalespersonDAO spDAO = new SalespersonDAO();
 
         public SalespersonController() { }
 
-        public SalespersonController(List<Salesperson> salespersons)
+        public IHttpActionResult GetAllSalespersons()
         {
-            this.salespersons = salespersons;
-        }
-
-        public IEnumerable<Salesperson> GetAllSalespersons()
-        {
-            return spDAO.GetAll();
+            List<Salesperson> salespersons = spDAO.GetAll() as List<Salesperson>;
+            if (salespersons == null)
+            {
+                return NotFound();
+            }
+            return Ok(salespersons);
         }
 
         public IHttpActionResult GetSalesperson(int id)
@@ -39,7 +38,7 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [ResponseType(typeof(Salesperson))]
-        public IHttpActionResult PostDistrict([FromBody]Salesperson salesperson)
+        public IHttpActionResult PostSalesperson([FromBody]Salesperson salesperson)
         {
             if (salesperson == null)
             {
@@ -66,7 +65,7 @@ namespace WebAPI.Controllers
 
         [HttpPut]
         [ResponseType(typeof(Salesperson))]
-        public IHttpActionResult PutDistrict([FromBody]Salesperson salesperson)
+        public IHttpActionResult PutSalesperson([FromBody]Salesperson salesperson)
         {
             if (salesperson == null)
             {
@@ -78,17 +77,16 @@ namespace WebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            int newId = 0;
             try
             {
-                newId = spDAO.Update(salesperson);
+                spDAO.Update(salesperson);
             }
             catch (Exception e)
             {
                 return BadRequest("e.message");
             }
 
-            return CreatedAtRoute("DefaultApi", new { id = newId }, salesperson);
+            return Content(HttpStatusCode.Accepted, salesperson);
         }
 
     }
