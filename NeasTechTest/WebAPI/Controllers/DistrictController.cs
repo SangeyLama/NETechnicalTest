@@ -66,7 +66,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut]
-        [ResponseType(typeof(District))]
+        [ResponseType(typeof(Int32))]
         public IHttpActionResult PutDistrict([FromBody]District district)
         {
             if (district == null)
@@ -79,17 +79,21 @@ namespace WebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            int newId = 0;
+            int rowsAffected = 0;
             try
             {
-                newId = dDAO.UpdateDS(district);
+                rowsAffected = dDAO.UpdateDS(district);
+                if(district.Salespersons != null || district.Salespersons.Count() != 0)
+                {
+                    rowsAffected += dDAO.UpdateSalespersonsList(district);
+                }                
             }
             catch (Exception e)
             {
                 return BadRequest("e.message");
             }
 
-            return CreatedAtRoute("DefaultApi", new { id = newId }, district);
+            return Ok();
         }
 
     }

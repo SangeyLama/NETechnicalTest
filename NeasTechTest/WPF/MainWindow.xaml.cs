@@ -30,13 +30,25 @@ namespace WPF
 
         private void Get_Districts_Button_Click(object sender, RoutedEventArgs e)
         {
-            DistrictLB.ItemsSource = GetAllDistrict();
+            DistrictLV.ItemsSource = GetAllDistrict();
         }       
 
         private void DistrictSelected(object sender, RoutedEventArgs e)
         {
-            var district = DistrictLB.SelectedItem as District;
-            DistrictInfo.Content = district;
+            var district = DistrictLV.SelectedItem as District;
+            if(district!= null)
+            {
+                district = GetDistrictById(district);
+                DistrictInfo.Content = district;
+            }       
+            if(district.Salespersons != null || district.Salespersons.Count() != 0)
+            {
+                SalespersonsLV.ItemsSource = district.Salespersons;
+            }
+            if (district.Stores != null || district.Stores.Count() != 0)
+            {
+                StoresLV.ItemsSource = district.Stores;
+            }
         }
 
         public static IEnumerable<District> GetAllDistrict()
@@ -54,5 +66,6 @@ namespace WPF
             IRestResponse<District> response = client.Execute<District>(request);
             return response.Data;
         }
+
     }
 }

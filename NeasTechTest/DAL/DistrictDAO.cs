@@ -131,7 +131,7 @@ namespace DAL
 
         public int UpdateDS(District district)
         {
-            int rowsAffected = 0;     
+            int rowsAffected = 0;
             string selectQuery =
                 "SELECT * FROM Districts Where id = @id";
             string updateQuery =
@@ -165,9 +165,105 @@ namespace DAL
 
                     rowsAffected = adapter.Update(districtTable);
 
-                    if(districtRow.HasErrors)
-                            Console.WriteLine("Update error:" + "\n" + districtRow.RowError);
-                }                
+                    if (districtRow.HasErrors)
+                        Console.WriteLine("Update error:" + "\n" + districtRow.RowError);
+                }
+            }
+            return rowsAffected;
+        }
+
+        public int UpdateSalespersonsList(District district)
+        {
+            int rowsAffected = 0;
+            DataSet districtSalespersons = new DataSet("districtSalespersons");
+            string selectQuery =
+                "SELECT * FROM District_Salesperson_Junction WHERE district_id = @districtId";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                using (SqlDataAdapter adapter = new SqlDataAdapter(selectQuery, connection))
+                {
+                    adapter.SelectCommand.Parameters.Add("@districtId", SqlDbType.Int).Value = district.Id;
+                    adapter.Fill(districtSalespersons, "District_Salesperson_Junction");
+
+                    var PKdistSales = new DataColumn[2];
+                    PKdistSales[0] = districtSalespersons.Tables["District_Salesperson_Junction"].Columns["district_id"];
+                    PKdistSales[1] = districtSalespersons.Tables["District_Salesperson_Junction"].Columns["salesperson_id"];
+                    districtSalespersons.Tables["District_Salesperson_Junction"].PrimaryKey = PKdistSales;
+
+                    string salespersonQuery =
+                       "SELECT * FROM Salespersons";
+                    adapter.SelectCommand.CommandText = salespersonQuery;
+                    adapter.Fill(districtSalespersons, "Salespersons");
+
+                    districtSalespersons.Relations.Add("SalespersonJunc", districtSalespersons.Tables["Salespersons"].Columns["id"],
+                        districtSalespersons.Tables["District_Salesperson_Junction"].Columns["salesperson_id"]);
+
+                    string insertQuery =
+                        "INSERT INTO District_Salesperson_Junction(district_id, salesperson_id)" +
+                        "Values (@districtId, @salespersonId);";
+                    adapter.InsertCommand = new SqlCommand(insertQuery, connection);
+                    adapter.InsertCommand.Parameters.Add("@districtId", SqlDbType.Int).SourceColumn = "district_id";
+                    adapter.InsertCommand.Parameters.Add("@salespersonId", SqlDbType.Int).SourceColumn = "salesperson_id";
+
+                    string deleteQuery =
+                        "DELETE FROM District_Salesperson_Junction WHERE district_id = @districtId AND salesperson_id = @salespersonId";
+                    adapter.DeleteCommand = new SqlCommand(deleteQuery, connection);
+                    adapter.DeleteCommand.Parameters.Add("@districtId", SqlDbType.Int).SourceColumn = "district_id";
+                    adapter.DeleteCommand.Parameters.Add("@salespersonId", SqlDbType.Int).SourceColumn = "salesperson_id";
+
+                    DataTable table = districtSalespersons.Tables["District_Salesperson_Junction"];
+                    foreach (DataRow row in table.Rows)
+                    {
+                        row.Delete();
+                    }
+                    if (district.Salespersons != null || district.Salespersons.Count() != 0)
+                    {
+                        foreach (Salesperson sp in district.Salespersons)
+                        {
+                            DataRow row = table.NewRow();
+                            row["district_id"] = district.Id;
+                            row["salesperson_id"] = sp.Id;
+                            table.Rows.Add(row);
+                        }
+                        Object[] keys = new Object[2];
+                        keys[0] = district.Id;
+                        keys[1] = district.PrimarySalesperson.Id;
+                        var found = table.Rows.Find(keys);
+                        if (found == null)
+                        {
+                            DataRow row = table.NewRow();
+                            row["district_id"] = district.Id;
+                            row["salesperson_id"] = district.PrimarySalesperson.Id;
+                            table.Rows.Add(row);
+                        }
+                    }
+                    else
+                    {
+                        DataRow row = table.NewRow();
+                        row["district_id"] = district.Id;
+                        row["salesperson_id"] = district.PrimarySalesperson.Id;
+                        table.Rows.Add(row);
+                    }
+
+                    connection.Open();
+                    SqlTransaction transaction = connection.BeginTransaction();
+                    adapter.InsertCommand.Transaction = transaction;
+                    adapter.DeleteCommand.Transaction = transaction;
+                    try
+                    {
+                        rowsAffected = adapter.Update(table);
+                        transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                    }
+                    finally
+                    {
+                        connection.Close();
+                    }
+                }
             }
             return rowsAffected;
         }
@@ -210,45 +306,48 @@ namespace DAL
             DataSet districtSalesperson = new DataSet("districtSalesperson");
             string districtsQuery =
                 "SELECT * FROM Districts WHERE id = @districtId";
-            SqlDataAdapter adapter = new SqlDataAdapter(districtsQuery, ConnectionString);
-            adapter.SelectCommand.Parameters.Add("@districtId", SqlDbType.Int).Value = id;
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                using (SqlDataAdapter adapter = new SqlDataAdapter(districtsQuery, connection))
+                {
+                    adapter.SelectCommand.Parameters.Add("@districtId", SqlDbType.Int).Value = id;
 
-            adapter.Fill(districtSalesperson, "Districts");
+                    adapter.Fill(districtSalesperson, "Districts");
 
-            string salespersonQuery =
-                "SELECT * FROM Salespersons";
-            adapter.SelectCommand.CommandText = salespersonQuery;
-            adapter.Fill(districtSalesperson, "Salespersons");
+                    string salespersonQuery =
+                        "SELECT * FROM Salespersons";
+                    adapter.SelectCommand.CommandText = salespersonQuery;
+                    adapter.Fill(districtSalesperson, "Salespersons");
 
-            string districtSalespersonQuery =
-                "SELECT * FROM District_Salesperson_Junction WHERE district_id = @districtId1";
-            adapter.SelectCommand.CommandText = districtSalespersonQuery;
-            adapter.SelectCommand.Parameters.Add("@districtId1", SqlDbType.Int).Value = id;
-            adapter.Fill(districtSalesperson, "District_Salesperson_Junction");
+                    string districtSalespersonQuery =
+                        "SELECT * FROM District_Salesperson_Junction WHERE district_id = @districtId1";
+                    adapter.SelectCommand.CommandText = districtSalespersonQuery;
+                    adapter.SelectCommand.Parameters.Add("@districtId1", SqlDbType.Int).Value = id;
+                    adapter.Fill(districtSalesperson, "District_Salesperson_Junction");
 
-            string storeQuery =
-                "SELECT * FROM Stores where district_id = @districtId2";
-            adapter.SelectCommand.CommandText = storeQuery;
-            adapter.SelectCommand.Parameters.Add("@districtId2", SqlDbType.Int).Value = id;
-            adapter.Fill(districtSalesperson, "Stores");
+                    string storeQuery =
+                        "SELECT * FROM Stores where district_id = @districtId2";
+                    adapter.SelectCommand.CommandText = storeQuery;
+                    adapter.SelectCommand.Parameters.Add("@districtId2", SqlDbType.Int).Value = id;
+                    adapter.Fill(districtSalesperson, "Stores");
 
-            //Not sure if necessary
-            //var PKdistSales = new DataColumn[2];
-            //PKdistSales[0] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"];
-            //PKdistSales[1] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"];
-            //districtSalesperson.Tables["District_Salesperson_Junction"].PrimaryKey = PKdistSales;
+                    //Not sure if necessary
+                    //var PKdistSales = new DataColumn[2];
+                    //PKdistSales[0] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"];
+                    //PKdistSales[1] = districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"];
+                    //districtSalesperson.Tables["District_Salesperson_Junction"].PrimaryKey = PKdistSales;
 
-            districtSalesperson.Relations.Add("DistrictJunc", districtSalesperson.Tables["Districts"].Columns["id"],
-                districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"]);
+                    districtSalesperson.Relations.Add("DistrictJunc", districtSalesperson.Tables["Districts"].Columns["id"],
+                        districtSalesperson.Tables["District_Salesperson_Junction"].Columns["district_id"]);
 
-            districtSalesperson.Relations.Add("SalespersonJunc", districtSalesperson.Tables["Salespersons"].Columns["id"],
-                districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"]);
+                    districtSalesperson.Relations.Add("SalespersonJunc", districtSalesperson.Tables["Salespersons"].Columns["id"],
+                        districtSalesperson.Tables["District_Salesperson_Junction"].Columns["salesperson_id"]);
 
-            districtSalesperson.Relations.Add("DistStore", districtSalesperson.Tables["Districts"].Columns["id"],
-                districtSalesperson.Tables["Stores"].Columns["district_id"]);
-
+                    districtSalesperson.Relations.Add("DistStore", districtSalesperson.Tables["Districts"].Columns["id"],
+                        districtSalesperson.Tables["Stores"].Columns["district_id"]);
+                }
+            }
             return BuildDistrict(districtSalesperson);
-
         }
 
         public District BuildDistrict(DataSet dataSet)
@@ -301,8 +400,8 @@ namespace DAL
                 {
                     district.Id = reader.GetInt32(idOrdinal);
                     district.Name = reader.GetString(nameOrdinal);
-                    //SalespersonDAO salespersonDal = new SalespersonDAO();
-                    //district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
+                    SalespersonDAO salespersonDal = new SalespersonDAO();
+                    district.PrimarySalesperson = salespersonDal.GetById(reader.GetInt32(primarySalespersonIdOrdinal));
                     //DistrictSalespersonJunctionDAO DsjDAL = new DistrictSalespersonJunctionDAO();
                     //district.Salespersons = DsjDAL.GetSalespersonsById(district.Id);
                 }

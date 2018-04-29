@@ -102,23 +102,18 @@ namespace Test
             //Test Store Delete
             //var result = sDAO.Delete(sDAO.GetById(3));
 
-            var result = InsertDistrict(new District { Id = 1, Name = "Central Denmark", PrimarySalesperson = spDAL.GetById(4) });
+            District dist = dDAL.GetByIdDataSet(2);
+            var tempSalespersons = new List<Salesperson>();
+            tempSalespersons.Add(spDAL.GetById(1));
+            tempSalespersons.Add(spDAL.GetById(3));
+            tempSalespersons.Add(spDAL.GetById(5));
+            tempSalespersons.Add(spDAL.GetById(7));
+            dist.Salespersons = tempSalespersons;
+            var result = dDAL.UpdateSalespersonsList(dist);
 
             Console.WriteLine(result.ToString());
             Console.ReadLine();
         }
 
-        public static District InsertDistrict(District data)
-        {
-            var dataString = JsonConvert.SerializeObject(data);
-
-            var client = new RestClient("http://localhost:54048/api/District/");
-            var request = new RestRequest(Method.POST);
-            request.AddParameter("application/json; charset=utf-8", dataString, ParameterType.RequestBody);
-            request.RequestFormat = DataFormat.Json;
-            IRestResponse<District> response = client.Execute<District>(request);
-            return response.Data;
-
-        }
     }
 }
