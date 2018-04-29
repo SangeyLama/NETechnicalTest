@@ -1,0 +1,7 @@
+Use NeasTest
+DBCC CHECKIDENT (Districts, RESEED, 0);
+
+DBCC CHECKIDENT (Salespersons, RESEED, 0);
+
+DBCC CHECKIDENT (Stores, RESEED, 0);
+GO

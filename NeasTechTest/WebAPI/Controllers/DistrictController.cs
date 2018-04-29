@@ -66,7 +66,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut]
-        [ResponseType(typeof(Int32))]
+        [ResponseType(typeof(District))]
         public IHttpActionResult PutDistrict([FromBody]District district)
         {
             if (district == null)
